@@ -1,26 +1,106 @@
-package baskethandlers
+package web
 
 import (
+	"basket-keeper/model"
+	"basket-keeper/util"
+	"net/http"
+	"strconv"
+
 	"github.com/labstack/echo/v4"
 )
 
-func GetAllBasket(context echo.Context) error {
-	return nil
-
+func GetAllBasket(c echo.Context) error {
+	var db, err = util.ConnectToSQLite()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Error connecting to the database")
+	}
+	// defer db.Close()
+	var baskets, gerr = model.GetAllBasket(db)
+	if gerr != nil {
+		return c.String(http.StatusInternalServerError, "Error retrieving baskets")
+	}
+	return c.JSON(http.StatusOK, baskets)
 }
 
-func CreateBasket(context echo.Context) error {
-	return nil
+func CreateBasket(c echo.Context) error {
+	var basket model.Basket
+	if err := c.Bind(&basket); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request data")
+	}
+	var db, err = util.ConnectToSQLite()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Error connecting to the database")
+	}
+	// defer db.Close()
+	var serr = model.CreateBasket(db, &basket)
+	if serr != nil {
+		return c.String(http.StatusInternalServerError, "Error creating basket")
+	}
+	return c.String(http.StatusCreated, "Basket created successfully")
 }
 
-func UpdateBasket(context echo.Context) error {
-	return nil
+func UpdateBasket(c echo.Context) error {
+	var basketID, cerr = strconv.ParseInt(c.Param("id"), 10, 16) // Extract basket ID from the request
+	if cerr != nil {
+		return c.String(http.StatusBadRequest, "Invalid basket Id")
+	}
+	var updatedBasket model.Basket
+	if err := c.Bind(&updatedBasket); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request data")
+	}
+	var db, err = util.ConnectToSQLite()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Error connecting to the database")
+	}
+	// defer db.Close()
+	var uerr = model.UpdateBasket(db, basketID, &updatedBasket)
+	if uerr != nil {
+		switch uerr.Error() {
+		case "Basket not found":
+			return c.String(http.StatusNotFound, "Basket not found")
+		case "error updating basket":
+			return c.String(http.StatusInternalServerError, "Error updating basket")
+		}
+	}
+	return c.String(http.StatusOK, "Basket updated successfully")
 }
 
-func GetBasket(context echo.Context) error {
-	return nil
+func GetBasket(c echo.Context) error {
+	var basketID, cerr = strconv.ParseInt(c.Param("id"), 10, 16) // Extract basket ID from the request
+	if cerr != nil {
+		return c.String(http.StatusBadRequest, "Invalid basket Id")
+	}
+	var db, err = util.ConnectToSQLite()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Error connecting to the database")
+	}
+	// defer db.Close()
+	var basket, gerr = model.GetBasket(db, basketID)
+	if gerr != nil {
+		return c.String(http.StatusNotFound, "Basket not found")
+	}
+	// Return basket details as a response (e.g., JSON or HTML)
+	return c.JSON(http.StatusOK, basket)
 }
 
-func DeleteBasket(context echo.Context) error {
-	return nil
+func DeleteBasket(c echo.Context) error {
+	var basketID, cerr = strconv.ParseInt(c.Param("id"), 10, 16) // Extract basket ID from the request
+	if cerr != nil {
+		return c.String(http.StatusBadRequest, "Invalid basket Id")
+	}
+	var db, err = util.ConnectToSQLite()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Error connecting to the database")
+	}
+	// defer db.Close()
+	var derr = model.DeleteBasket(db, basketID)
+	if derr != nil {
+		switch derr.Error() {
+		case "Basket not found":
+			return c.String(http.StatusNotFound, "Basket not found")
+		case "error deleting basket":
+			return c.String(http.StatusInternalServerError, "Error deleting basket")
+		}
+	}
+	return c.String(http.StatusOK, "Basket deleted successfully")
 }

@@ -1,25 +1,30 @@
 package main
 
 import (
+	"basket-keeper/model"
+	"basket-keeper/util"
 	"basket-keeper/web"
-	"fmt"
+	"log"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func main() {
-	var _, err = gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
+	var db, err = util.ConnectToSQLite()
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		log.Fatal(err)
 	}
+	// defer db.Close()
+	err = db.AutoMigrate(&model.Basket{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var e = echo.New()
-	e.GET("/basket", baskethandlers.GetAllBasket)
-	e.POST("/basket", baskethandlers.CreateBasket)
-	e.PATCH("/basket/:id", baskethandlers.UpdateBasket)
-	e.GET("/basket/:id", baskethandlers.GetBasket)
-	e.DELETE("/basket/:id", baskethandlers.DeleteBasket)
+	e.GET("/basket", web.GetAllBasket)
+	e.POST("/basket", web.CreateBasket)
+	e.PATCH("/basket/:id", web.UpdateBasket)
+	e.GET("/basket/:id", web.GetBasket)
+	e.DELETE("/basket/:id", web.DeleteBasket)
 	e.Logger.Fatal(e.Start(":8080"))
 }
