@@ -4,7 +4,6 @@ import (
 	"basket-keeper/model"
 	"basket-keeper/util"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -40,7 +39,7 @@ func CreateBasket(c echo.Context) error {
 }
 
 func UpdateBasket(c echo.Context) error {
-	var basketID, cerr = strconv.ParseInt(c.Param("id"), 10, 16) // Extract basket ID from the request
+	var basketID, cerr = util.ConvertStr2Int(c.Param("id")) // Extract basket ID from the request
 	if cerr != nil {
 		return c.String(http.StatusBadRequest, "Invalid basket Id")
 	}
@@ -66,7 +65,7 @@ func UpdateBasket(c echo.Context) error {
 }
 
 func GetBasket(c echo.Context) error {
-	var basketID, cerr = strconv.ParseInt(c.Param("id"), 10, 16) // Extract basket ID from the request
+	var basketID, cerr = util.ConvertStr2Int(c.Param("id")) // Extract basket ID from the request
 	if cerr != nil {
 		return c.String(http.StatusBadRequest, "Invalid basket Id")
 	}
@@ -84,7 +83,7 @@ func GetBasket(c echo.Context) error {
 }
 
 func DeleteBasket(c echo.Context) error {
-	var basketID, cerr = strconv.ParseInt(c.Param("id"), 10, 16) // Extract basket ID from the request
+	var basketID, cerr = util.ConvertStr2Int(c.Param("id")) // Extract basket ID from the request
 	if cerr != nil {
 		return c.String(http.StatusBadRequest, "Invalid basket Id")
 	}
