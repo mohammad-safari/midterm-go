@@ -27,7 +27,7 @@ type Basket struct {
 	ID        int64       `json:"id" gorm:"primaryKey"`
 	CreatedAt time.Time   `json:"created_at"` // gorm:autoCreateTime
 	UpdatedAt time.Time   `json:"updated_at"` // gorm:autoUpdateTime
-	Data      []byte      `json:"data,omitempty"`
+	Data      []byte      `json:"data,omitempty" gorm:"size:2048"`
 	State     BasketState `json:"state" gorm:"default:PENDING"`
 }
 
