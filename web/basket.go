@@ -31,11 +31,14 @@ func CreateBasket(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Error connecting to the database")
 	}
 	// defer db.Close()
-	var serr = model.CreateBasket(db, &basket)
+	var created_basket, serr = model.CreateBasket(db, &basket)
+	if serr.Error() == "invalid data" {
+		return c.String(http.StatusBadRequest, "Invalid request data")
+	}
 	if serr != nil {
 		return c.String(http.StatusInternalServerError, "Error creating basket")
 	}
-	return c.String(http.StatusCreated, "Basket created successfully")
+	return c.JSON(http.StatusCreated, created_basket)
 }
 
 func UpdateBasket(c echo.Context) error {
@@ -57,6 +60,10 @@ func UpdateBasket(c echo.Context) error {
 		switch uerr.Error() {
 		case "Basket not found":
 			return c.String(http.StatusNotFound, "Basket not found")
+		case "invalid data":
+			return c.String(http.StatusBadRequest, "Invalid request data")
+		case "Basket is Completed":
+			return c.String(http.StatusUnprocessableEntity, "Basket is Completed already")
 		case "error updating basket":
 			return c.String(http.StatusInternalServerError, "Error updating basket")
 		}

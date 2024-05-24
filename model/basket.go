@@ -7,12 +7,28 @@ import (
 	"gorm.io/gorm"
 )
 
+type BasketState string
+
+const (
+	PENDING   BasketState = "PENDING"
+	COMPLETED BasketState = "COMPLETED"
+)
+
+func isValidState(state BasketState) error {
+	switch state {
+	case PENDING, COMPLETED:
+		return nil
+	default:
+		return errors.New("invalid data")
+	}
+}
+
 type Basket struct {
-	ID        int64     `json:"id" gorm:"primaryKey"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Data      []byte    `json:"data,omitempty"`
-	State     string    `json:"state"`
+	ID        int64       `json:"id" gorm:"primaryKey"`
+	CreatedAt time.Time   `json:"created_at"` // gorm:autoCreateTime
+	UpdatedAt time.Time   `json:"updated_at"` // gorm:autoUpdateTime
+	Data      []byte      `json:"data,omitempty"`
+	State     BasketState `json:"state" gorm:"default:PENDING"`
 }
 
 func GetAllBasket(db *gorm.DB) (*[]Basket, error) {
@@ -24,12 +40,16 @@ func GetAllBasket(db *gorm.DB) (*[]Basket, error) {
 	return &baskets, nil
 }
 
-func CreateBasket(db *gorm.DB, basket *Basket) error {
+func CreateBasket(db *gorm.DB, basket *Basket) (*Basket, error) {
+	var verr = isValidState(basket.State)
+	if verr != nil {
+		return nil, verr
+	}
 	var result = db.Create(basket)
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
-	return nil
+	return basket, nil
 }
 
 func UpdateBasket(db *gorm.DB, basketID int64, updatedBasket *Basket) error {
@@ -38,9 +58,16 @@ func UpdateBasket(db *gorm.DB, basketID int64, updatedBasket *Basket) error {
 	if result.Error != nil {
 		return errors.New("Basket not found")
 	}
-	// Update fields
+	var verr = isValidState(updatedBasket.State)
+	if verr != nil {
+		return verr
+	}
+	if existingBasket.State == COMPLETED {
+		return errors.New("Basket is Completed")
+	}
 	existingBasket.State = updatedBasket.State
-	// Update other fields as needed
+	existingBasket.Data = updatedBasket.Data
+	// updated_at will be handled by gorm
 	result = db.Save(&existingBasket)
 	if result.Error != nil {
 		return errors.New("error updating basket")
