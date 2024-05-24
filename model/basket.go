@@ -19,7 +19,7 @@ func isValidState(state BasketState) error {
 	case PENDING, COMPLETED:
 		return nil
 	default:
-		return errors.New("invalid data")
+		return BasketInvalidDataError{errors.New("invalid data")}
 	}
 }
 
@@ -35,7 +35,7 @@ func GetAllBasket(db *gorm.DB) (*[]Basket, error) {
 	var baskets []Basket
 	var result = db.Find(&baskets)
 	if result.Error != nil {
-		return nil, errors.New("error retrieving baskets")
+		return nil, BasketRetrieveError{errors.New("error retrieving baskets")}
 	}
 	return &baskets, nil
 }
@@ -56,21 +56,21 @@ func UpdateBasket(db *gorm.DB, basketID int64, updatedBasket *Basket) error {
 	var existingBasket Basket
 	var result = db.First(&existingBasket, basketID)
 	if result.Error != nil {
-		return errors.New("Basket not found")
+		return BasketNotFoundError{errors.New("basket not found")}
 	}
 	var verr = isValidState(updatedBasket.State)
 	if verr != nil {
 		return verr
 	}
 	if existingBasket.State == COMPLETED {
-		return errors.New("Basket is Completed")
+		return BasketCompletedError{errors.New("basket is completed")}
 	}
 	existingBasket.State = updatedBasket.State
 	existingBasket.Data = updatedBasket.Data
 	// updated_at will be handled by gorm
 	result = db.Save(&existingBasket)
 	if result.Error != nil {
-		return errors.New("error updating basket")
+		return BasketUpdateError{errors.New("error updating basket")}
 	}
 	return nil
 }
@@ -88,11 +88,11 @@ func DeleteBasket(db *gorm.DB, basketID int64) error {
 	var basket Basket
 	var result = db.First(&basket, basketID)
 	if result.Error != nil {
-		return errors.New("Basket not found")
+		return BasketNotFoundError{errors.New("basket not found")}
 	}
 	result = db.Delete(&basket)
 	if result.Error != nil {
-		return errors.New("error deleting basket")
+		return BasketDeleteError{errors.New("error deleting basket")}
 	}
 	return nil
 }

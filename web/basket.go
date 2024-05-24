@@ -57,14 +57,14 @@ func UpdateBasket(c echo.Context) error {
 	// defer db.Close()
 	var uerr = model.UpdateBasket(db, basketID, &updatedBasket)
 	if uerr != nil {
-		switch uerr.Error() {
-		case "Basket not found":
+		switch uerr.(type) {
+		case model.BasketNotFoundError:
 			return c.String(http.StatusNotFound, "Basket not found")
-		case "invalid data":
+		case model.BasketInvalidDataError:
 			return c.String(http.StatusBadRequest, "Invalid request data")
-		case "Basket is Completed":
+		case model.BasketCompletedError:
 			return c.String(http.StatusUnprocessableEntity, "Basket is Completed already")
-		case "error updating basket":
+		case model.BasketUpdateError:
 			return c.String(http.StatusInternalServerError, "Error updating basket")
 		}
 	}
@@ -85,7 +85,6 @@ func GetBasket(c echo.Context) error {
 	if gerr != nil {
 		return c.String(http.StatusNotFound, "Basket not found")
 	}
-	// Return basket details as a response (e.g., JSON or HTML)
 	return c.JSON(http.StatusOK, basket)
 }
 
@@ -101,10 +100,10 @@ func DeleteBasket(c echo.Context) error {
 	// defer db.Close()
 	var derr = model.DeleteBasket(db, basketID)
 	if derr != nil {
-		switch derr.Error() {
-		case "Basket not found":
+		switch derr.(type) {
+		case model.BasketNotFoundError:
 			return c.String(http.StatusNotFound, "Basket not found")
-		case "error deleting basket":
+		case model.BasketDeleteError:
 			return c.String(http.StatusInternalServerError, "Error deleting basket")
 		}
 	}
