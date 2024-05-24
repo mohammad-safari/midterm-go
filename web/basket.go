@@ -14,7 +14,8 @@ func GetAllBasket(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Error connecting to the database")
 	}
 	// defer db.Close()
-	var baskets, gerr = model.GetAllBasket(db)
+	var userId, _ = GetUserIDFromContext(c)
+	var baskets, gerr = model.GetAllBasket(db, userId)
 	if gerr != nil {
 		return c.String(http.StatusInternalServerError, "Error retrieving baskets")
 	}
@@ -31,7 +32,8 @@ func CreateBasket(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Error connecting to the database")
 	}
 	// defer db.Close()
-	var created_basket, serr = model.CreateBasket(db, &basket)
+	var userId, _ = GetUserIDFromContext(c)
+	var created_basket, serr = model.CreateBasket(db, userId, &basket)
 	if serr != nil {
 		switch serr.(type) {
 		case model.BasketInvalidDataError:
@@ -56,7 +58,8 @@ func UpdateBasket(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Error connecting to the database")
 	}
 	// defer db.Close()
-	var uerr = model.UpdateBasket(db, basketID, &updatedBasket)
+	var userId, _ = GetUserIDFromContext(c)
+	var uerr = model.UpdateBasket(db, userId, basketID, &updatedBasket)
 	if uerr != nil {
 		switch uerr.(type) {
 		case model.BasketNotFoundError:
@@ -82,7 +85,8 @@ func GetBasket(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Error connecting to the database")
 	}
 	// defer db.Close()
-	var basket, gerr = model.GetBasket(db, basketID)
+	var userId, _ = GetUserIDFromContext(c)
+	var basket, gerr = model.GetBasket(db, userId, basketID)
 	if gerr != nil {
 		return c.String(http.StatusNotFound, "Basket not found")
 	}
@@ -99,7 +103,8 @@ func DeleteBasket(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Error connecting to the database")
 	}
 	// defer db.Close()
-	var derr = model.DeleteBasket(db, basketID)
+	var userId, _ = GetUserIDFromContext(c)
+	var derr = model.DeleteBasket(db, userId, basketID)
 	if derr != nil {
 		switch derr.(type) {
 		case model.BasketNotFoundError:

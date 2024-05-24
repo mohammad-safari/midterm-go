@@ -23,3 +23,27 @@ type BasketCompletedError struct {
 type BasketInvalidDataError struct {
 	error
 }
+
+type UserCreateError struct {
+	error
+}
+
+type UsernamePasswordMismatchError struct {
+	error
+}
+
+type UserRetreiveError struct {
+	error
+}
+
+type TokenGenerationError struct {
+	error
+}
+
+type UserNotFoundError struct {
+	error
+}
+
+type UserDeleteError struct {
+	error
+}
