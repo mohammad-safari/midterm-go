@@ -32,10 +32,11 @@ func CreateBasket(c echo.Context) error {
 	}
 	// defer db.Close()
 	var created_basket, serr = model.CreateBasket(db, &basket)
-	if serr.Error() == "invalid data" {
-		return c.String(http.StatusBadRequest, "Invalid request data")
-	}
 	if serr != nil {
+		switch serr.(type) {
+		case model.BasketInvalidDataError:
+			return c.String(http.StatusBadRequest, "Invalid request data")
+		}
 		return c.String(http.StatusInternalServerError, "Error creating basket")
 	}
 	return c.JSON(http.StatusCreated, created_basket)
