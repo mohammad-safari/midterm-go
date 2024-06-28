@@ -7,15 +7,17 @@ import (
 	"log"
 
 	"github.com/labstack/echo/v4"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
 	var db, err = util.ConnectToSQLite()
 	if err != nil {
 		log.Fatal(err)
 	}
 	// defer db.Close()
-	err = db.AutoMigrate(&model.Basket{})
+	err = db.AutoMigrate(&model.Basket{}, &model.User{})
 	if err != nil {
 		log.Fatal(err)
 	}
