@@ -29,7 +29,7 @@ type Basket struct {
 	UpdatedAt time.Time   `json:"updated_at"` // gorm:autoUpdateTime
 	Data      []byte      `json:"data,omitempty" gorm:"size:2048"`
 	State     BasketState `json:"state" gorm:"default:PENDING"`
-	UserID    int64       `json:"user_id,omitempty"` // Foreign key for User
+	UserID    *int64       `json:"user_id,omitempty"` // Foreign key for User
 	User      *User       `json:"user,omitempty" gorm:"foreignKey:UserID;references:ID"`
 }
 
@@ -53,7 +53,7 @@ func CreateBasket(db *gorm.DB, userId int64, basket *Basket) (*Basket, error) {
 		return nil, verr
 	}
 	if userId != 0 { // a user id provided in context
-		basket.UserID = userId
+		basket.UserID = &userId
 	}
 	var result = db.Create(basket)
 	if result.Error != nil {
@@ -65,7 +65,7 @@ func CreateBasket(db *gorm.DB, userId int64, basket *Basket) (*Basket, error) {
 func UpdateBasket(db *gorm.DB, userId int64, basketID int64, updatedBasket *Basket) error {
 	var existingBasket Basket
 	if userId != 0 { // a user id provided in context
-		updatedBasket.UserID = userId
+		updatedBasket.UserID = &userId
 	}
 	var result = db.First(&existingBasket, basketID)
 	if result.Error != nil {
