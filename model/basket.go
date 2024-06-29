@@ -113,7 +113,7 @@ func DeleteBasket(db *gorm.DB, userId int64, basketID int64) error {
 	if result.Error != nil {
 		return BasketNotFoundError{errors.New("basket not found")}
 	}
-	result = db.Delete(&basket)
+	result = db.Delete(&result)
 	if result.Error != nil {
 		return BasketDeleteError{errors.New("error deleting basket")}
 	}

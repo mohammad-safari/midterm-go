@@ -113,5 +113,5 @@ func DeleteBasket(c echo.Context) error {
 			return c.String(http.StatusInternalServerError, "Error deleting basket")
 		}
 	}
-	return c.String(http.StatusOK, "Basket deleted successfully")
+	return c.String(http.StatusNoContent, "Basket deleted successfully")
 }
